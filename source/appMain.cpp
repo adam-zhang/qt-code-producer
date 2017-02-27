@@ -3,7 +3,7 @@
 #include <sstream>
 #include <iostream>
 #include <fstream>
-#include <string.h>
+//#include <string.h>
 #include <cctype>
 
 using namespace std;
@@ -11,7 +11,7 @@ using namespace std;
 int printHelp()
 {
 	cout << "Usage:\n"
-		<< "\t--help show this message.\n"
+		<< "\t--help : show this message.\n"
 		//<< "\t--app generate files which can build a basic application.\n"
 		//<< "\t--gui generate files which can build a basic GUI application.\n"
 		<< "\t--class className : generate two files for a class without base class.\n"
@@ -75,34 +75,34 @@ string generateClassCppFile(const string& className, const string& baseClassName
 		className + "::~" + className + "(){}\n";
 }
 
-bool generateApp(const string& /*projectName*/)
-{
-	stringstream ss;
-	ss << "#include <iostream>\n\n"
-		<< "using namespace std;\n\n"
-		<< "int main(int argc, char** argv);\n"
-		<< "{\n"
-		<< "\tcout << \"Hello World!\" << endl;\n"
-		<< "}"
-		<< endl;
-	fstream file;
-	file.open("appMain.cpp", ios_base::in|ios_base::out);
-	if (file.good())
-	{
-		file << ss.str();
-		file.close();
-		return true;
-	}
-	return false;
-}
+//bool generateApp(const string& /*projectName*/)
+//{
+//	stringstream ss;
+//	ss << "#include <iostream>\n\n"
+//		<< "using namespace std;\n\n"
+//		<< "int main(int argc, char** argv);\n"
+//		<< "{\n"
+//		<< "\tcout << \"Hello World!\" << endl;\n"
+//		<< "}"
+//		<< endl;
+//	fstream file;
+//	file.open("appMain.cpp", ios_base::in|ios_base::out);
+//	if (file.good())
+//	{
+//		file << ss.str();
+//		file.close();
+//		return true;
+//	}
+//	return false;
+//}
 
-bool analyse(int argc, char** argv)
-{
-	if (argc == 2 || argc == 3 || argc == 4)
-		return true;
-	else
-		return printHelp();
-}
+//bool analyse(int argc, char** argv)
+//{
+//	if (argc == 2 || argc == 3 || argc == 4)
+//		return true;
+//	else
+//		return printHelp();
+//}
 
 void writeContent(const string& fileName, const string& content)
 {
@@ -116,67 +116,67 @@ void writeContent(const string& fileName, const string& content)
 	}
 }
 
-string getGuiMainContent()
-{
-	return "#include <QApplication>\n"
-		"#include \"MainWindow.h\"\n\n"
-		"int main(int argc, char** argv)\n"
-		"{\n"
-		"\tQApplication a(argc, argv);\n"
-		"\tMainWindow w;\n"
-		"w.show();\n"
-		"return a.exec();\n"
-		"}";
-}
+//string getGuiMainContent()
+//{
+//	return "#include <QApplication>\n"
+//		"#include \"MainWindow.h\"\n\n"
+//		"int main(int argc, char** argv)\n"
+//		"{\n"
+//		"\tQApplication a(argc, argv);\n"
+//		"\tMainWindow w;\n"
+//		"w.show();\n"
+//		"return a.exec();\n"
+//		"}";
+//}
 
-string getMainWindowHeaderContent()
-{
-	stringstream ss;
-	ss << "#ifndef __MAIN_WINDOW__H\n"
-	      "#define __MAIN_WINDOW__H\n\n"
-	      "#include <QMainWindow>\n\n"
-	      "class MainWindow : public QMainWindow\n"
-	      "{\n"
-	      "\tQ_OBJECT\n"
-	      "public:\n"
-	      "\tMainWindow();\n"
-	      "\t~MainWindow();\n"
-	      "}\n"
-	      "#endif//__MAIN_WINDOW__H" << endl;
-	return ss.str();
-}
+//string getMainWindowHeaderContent()
+//{
+//	stringstream ss;
+//	ss << "#ifndef __MAIN_WINDOW__H\n"
+//	      "#define __MAIN_WINDOW__H\n\n"
+//	      "#include <QMainWindow>\n\n"
+//	      "class MainWindow : public QMainWindow\n"
+//	      "{\n"
+//	      "\tQ_OBJECT\n"
+//	      "public:\n"
+//	      "\tMainWindow();\n"
+//	      "\t~MainWindow();\n"
+//	      "}\n"
+//	      "#endif//__MAIN_WINDOW__H" << endl;
+//	return ss.str();
+//}
 
-string getGuiMainWindowContent()
-{
-	return "#include \"MainWindow.h\"\n\n"
-		"MainWindow::MainWindow() {}\n\n"
-		"MainWindow::~MainWindow() {}";
+//string getGuiMainWindowContent()
+//{
+//	return "#include \"MainWindow.h\"\n\n"
+//		"MainWindow::MainWindow() {}\n\n"
+//		"MainWindow::~MainWindow() {}";
+//
+//}
 
-}
+//string consoleMakeLists(const string projectName)
+//{
+//	return "cmake_minimum_required(VERSION 2.8)\n"
+//		"project(\"" + projectName + ")\n"
+//		"set(sources appMain.cpp\n"
+//		"\t)\n"
+//		"add_executable(" + projectName + " {sources})\n";
+//
+//}
 
-string consoleMakeLists(const string projectName)
-{
-	return "cmake_minimum_required(VERSION 2.8)\n"
-		"project(\"" + projectName + ")\n"
-		"set(sources appMain.cpp\n"
-		"\t)\n"
-		"add_executable(" + projectName + " {sources})\n";
-
-}
-
-int generateGuiApp(const string& projectName)
-{
-	string mainContent = getGuiMainContent();
-	writeContent("appMain.cpp", mainContent);
-	string guiHeaderContent = getMainWindowHeaderContent();
-	writeContent("MainWindow.h", guiHeaderContent);
-	string guiWindowContent = getGuiMainWindowContent();
-	writeContent("MainWindow.cpp", guiWindowContent);
-	//if (projectName.size() == 0)
-	//	writeContent("CMakeLists.txt", guiMakeLists("test"));
-	//else
-	//	writeContent("CMakeLists.txt", guiMakeLists(projectName));
-}
+//int generateGuiApp(const string& projectName)
+//{
+//	string mainContent = getGuiMainContent();
+//	writeContent("appMain.cpp", mainContent);
+//	string guiHeaderContent = getMainWindowHeaderContent();
+//	writeContent("MainWindow.h", guiHeaderContent);
+//	string guiWindowContent = getGuiMainWindowContent();
+//	writeContent("MainWindow.cpp", guiWindowContent);
+//	//if (projectName.size() == 0)
+//	//	writeContent("CMakeLists.txt", guiMakeLists("test"));
+//	//else
+//	//	writeContent("CMakeLists.txt", guiMakeLists(projectName));
+//}
 
 
 
@@ -195,19 +195,21 @@ int generateClass(const string& className, const string& baseClassName)
 	string headerFile = className + ".h";
 	string cppFile = className + ".cpp";
 	writeContent(headerFile, generateClassHeaderFile(className, baseClassName));
-	writeContent(cppFile, generateClassCppFile(className, baseClassName));
+	writeContent(cppFile, generateClassCppFile(className));// baseClassName));
 	return 0;
 }
 
 int process(const string&)
 {
-
+	printHelp();
+	return -1;
 }
 
 int process(const string& arg1, const string& arg2)
 {
 	if (arg1 == "--class")
 		return generateClass(arg2);	
+	printHelp();
 	return -1;
 }
 
@@ -215,6 +217,7 @@ int process(const string& arg1, const string& arg2, const string& arg3)
 {
 	if (arg1 == "--class")
 		return generateClass(arg2, arg3);
+	printHelp();
 	return -1;
 }
 
@@ -228,5 +231,6 @@ int main(int argc, char** argv)
 		return process(argv[1], argv[2]);
 	if (argc == 4)
 		return process(argv[1], argv[2], argv[3]);
-	return 0;
+	printHelp();
+	return -1;
 }
