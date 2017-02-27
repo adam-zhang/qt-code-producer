@@ -1,8 +1,10 @@
 #include <vector>
+#include <algorithm>
 #include <sstream>
 #include <iostream>
 #include <fstream>
 #include <string.h>
+#include <cctype>
 
 using namespace std;
 
@@ -13,13 +15,66 @@ bool printHelp()
 		<< "\t--app generate files which can build a basic application.\n"
 		<< "\t--gui generate files which can build a basic GUI application.\n"
 		<< "\t--class generate two files for a class with base class.\n"
-		<< "\t--qclass generate two files for a class which base class must be a class in Qt.\n"
+		<< "\t--qt-class generate two files for a class which base class must be a class in Qt.\n"
 		<< "\t--baseclass generate two files for a class without base class.\n"
 		<< endl;
 	return true;
 }
 
-bool generateApp()
+string getUppercase(const string& className)
+{
+	string uppercase(className);
+	transform(uppercase.begin(), uppercase.end(), uppercase.begin(),::toupper);
+	return "__" + uppercase + "__H";
+}
+
+string generateClassHeaderFile(const string& className)
+{
+	string uppercase = getUppercase(className);
+	return "#ifndef " + uppercase + "\n" +
+		"#define " + uppercase + "\n\n" +
+		"class " + className + "\n"
+		"{\n"
+		"public:\n"
+		"\t" + className + "();\n"
+		"\t~" + className + "();\n"
+		"}\n"
+		"#endif//" + uppercase + "\n";
+}
+
+string generateClassHeaderFile(const string& className, const string& baseClassName)
+{
+	string uppercase = getUppercase(className);
+	return "#ifndef " + uppercase + "\n"
+		"#define " + uppercase + "\n\n"
+		"#include \"" + baseClassName + ".h\"\n\n"
+		"class " + className + "\n"
+		"{\n"
+		"public:\n"
+		"\t" + className + "();\n"
+		"\t~" + className + "();\n"
+		"#endif//" + uppercase + "\n";
+
+}
+
+string generateClassCppFile(const string& className)
+{
+	return "#include \"" + className + "\"\n\n" +
+		className + "::" + className + "(){}\n" +
+		className + "::~" + className + "() {}\n";
+
+}
+
+string generateClassCppFile(const string& className, const string& baseClassName)
+{
+	return "#include \"" + className + ".h\"\n\n" +
+		className + "::" + className + "()\n"
+		"\t:" + baseClassName + "()\n"
+		"\t{}\n" +
+		className + "::~" + className + "(){}\n";
+}
+
+bool generateApp(const string& /*projectName*/)
 {
 	stringstream ss;
 	ss << "#include <iostream>\n\n"
@@ -50,8 +105,8 @@ bool analyse(int argc, char** argv)
 
 void writeContent(const string& fileName, const string& content)
 {
-	fstream file;
-	file.open(fileName.c_str(), ios_base::in);
+	ofstream file;
+	file.open(fileName.c_str());
 	if (file.good())
 	{
 		file << content;
@@ -62,17 +117,15 @@ void writeContent(const string& fileName, const string& content)
 
 string getGuiMainContent()
 {
-	stringstream ss;
-	ss << "#include <QApplication>\n"
+	return "#include <QApplication>\n"
 		"#include \"MainWindow.h\"\n\n"
 		"int main(int argc, char** argv)\n"
 		"{\n"
 		"\tQApplication a(argc, argv);\n"
-		"\tMainWindow w;"
-		"w.show();"
-		"return a.exec();"
-		"}" << endl;
-	return ss.str();
+		"\tMainWindow w;\n"
+		"w.show();\n"
+		"return a.exec();\n"
+		"}";
 }
 
 string getMainWindowHeaderContent()
@@ -83,6 +136,7 @@ string getMainWindowHeaderContent()
 	      "#include <QMainWindow>\n\n"
 	      "class MainWindow : public QMainWindow\n"
 	      "{\n"
+	      "\tQ_OBJECT\n"
 	      "public:\n"
 	      "\tMainWindow();\n"
 	      "\t~MainWindow();\n"
@@ -99,7 +153,17 @@ string getGuiMainWindowContent()
 
 }
 
-int generateGuiApp()
+string consoleMakeLists(const string projectName)
+{
+	return "cmake_minimum_required(VERSION 2.8)\n"
+		"project(\"" + projectName + ")\n"
+		"set(sources appMain.cpp\n"
+		"\t)\n"
+		"add_executable(" + projectName + " {sources})\n";
+
+}
+
+int generateGuiApp(const string& projectName)
 {
 	string mainContent = getGuiMainContent();
 	writeContent("appMain.cpp", mainContent);
@@ -107,6 +171,31 @@ int generateGuiApp()
 	writeContent("MainWindow.h", guiHeaderContent);
 	string guiWindowContent = getGuiMainWindowContent();
 	writeContent("MainWindow.cpp", guiWindowContent);
+	//if (projectName.size() == 0)
+	//	writeContent("CMakeLists.txt", guiMakeLists("test"));
+	//else
+	//	writeContent("CMakeLists.txt", guiMakeLists(projectName));
+}
+
+
+
+
+int generateClass(const string& className)
+{
+	string headerFile = className + ".h";
+	string cppFile = className + ".cpp";
+	writeContent(headerFile, generateClassHeaderFile(className));
+       	writeContent(cppFile, generateClassCppFile(className));
+	return 0;
+}
+
+int generateClass(const string& className, const string& baseClassName)
+{
+	string headerFile = className + ".h";
+	string cppFile = className + ".cpp";
+	writeContent(headerFile, generateClassHeaderFile(className, baseClassName));
+	writeContent(cppFile, generateClassCppFile(className, baseClassName));
+	return 0;
 }
 
 int main(int argc, char** argv)
@@ -116,10 +205,16 @@ int main(int argc, char** argv)
 	if (argc == 2 && strcmp(argv[1],"--help") == 0)
 		return printHelp();
 	if (argc == 2 && strcmp(argv[1],"--app") == 0)
-		return generateApp();
+		return generateApp("test");
 	if (argc == 2 && strcmp(argv[1],"--gui") == 0)
-		return generateGuiApp();
-	//if (argc == 3 && (strcmp(argv[1],"--class") == 0 || strcmp(argv[1],"-c") == 0)
-	//	return generateClass(argv[2]);
+		return generateGuiApp("");
+	if (argc == 3 && strcmp(argv[1], "--gui") == 0)
+		return generateGuiApp(argv[2]);
+	//if (argc == 3 && strcmp(argv[1], "--app") == 0)
+	//	return generateApp(argv[2]);
+	if (argc == 3 && (strcmp(argv[1],"--class") == 0 ))
+		return generateClass(argv[2]);
+	if (argc == 4 && strcmp(argv[1], "--class" ) == 0)
+		return generateClass(argv[2], argv[3]);
 	return 0;
 }
