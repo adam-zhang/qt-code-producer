@@ -8,17 +8,18 @@
 
 using namespace std;
 
-bool printHelp()
+int printHelp()
 {
 	cout << "Usage:\n"
 		<< "\t--help show this message.\n"
-		<< "\t--app generate files which can build a basic application.\n"
-		<< "\t--gui generate files which can build a basic GUI application.\n"
-		<< "\t--class generate two files for a class with base class.\n"
-		<< "\t--qt-class generate two files for a class which base class must be a class in Qt.\n"
-		<< "\t--baseclass generate two files for a class without base class.\n"
+		//<< "\t--app generate files which can build a basic application.\n"
+		//<< "\t--gui generate files which can build a basic GUI application.\n"
+		<< "\t--class className : generate two files for a class without base class.\n"
+		<< "\t--class className baseClassName : generate two files for a class with base class."
+		//<< "\t--qt-class generate two files for a class which base class must be a class in Qt.\n"
+		//<< "\t--baseclass generate two files for a class without base class.\n"
 		<< endl;
-	return true;
+	return 0;
 }
 
 string getUppercase(const string& className)
@@ -59,7 +60,7 @@ string generateClassHeaderFile(const string& className, const string& baseClassN
 
 string generateClassCppFile(const string& className)
 {
-	return "#include \"" + className + "\"\n\n" +
+	return "#include \"" + className + ".h\"\n\n" +
 		className + "::" + className + "(){}\n" +
 		className + "::~" + className + "() {}\n";
 
@@ -198,23 +199,34 @@ int generateClass(const string& className, const string& baseClassName)
 	return 0;
 }
 
+int process(const string&)
+{
+
+}
+
+int process(const string& arg1, const string& arg2)
+{
+	if (arg1 == "--class")
+		return generateClass(arg2);	
+	return -1;
+}
+
+int process(const string& arg1, const string& arg2, const string& arg3)
+{
+	if (arg1 == "--class")
+		return generateClass(arg2, arg3);
+	return -1;
+}
+
 int main(int argc, char** argv)
 {
-	if (!analyse(argc, argv))
-		return 0;
-	if (argc == 2 && strcmp(argv[1],"--help") == 0)
+	if (argc == 1)
 		return printHelp();
-	if (argc == 2 && strcmp(argv[1],"--app") == 0)
-		return generateApp("test");
-	if (argc == 2 && strcmp(argv[1],"--gui") == 0)
-		return generateGuiApp("");
-	if (argc == 3 && strcmp(argv[1], "--gui") == 0)
-		return generateGuiApp(argv[2]);
-	//if (argc == 3 && strcmp(argv[1], "--app") == 0)
-	//	return generateApp(argv[2]);
-	if (argc == 3 && (strcmp(argv[1],"--class") == 0 ))
-		return generateClass(argv[2]);
-	if (argc == 4 && strcmp(argv[1], "--class" ) == 0)
-		return generateClass(argv[2], argv[3]);
+	if (argc == 2)
+		return process(argv[1]);
+	if (argc == 3)
+		return process(argv[1], argv[2]);
+	if (argc == 4)
+		return process(argv[1], argv[2], argv[3]);
 	return 0;
 }
